@@ -11,25 +11,6 @@ import io
 import wave
 from audio_recorder_streamlit import audio_recorder
 
-
-
-st.title('Voice Emotion Detection')
-st.text('This web app uses ML Algorithms to detect realtime emotion of your speech')
-
-
-st.header("1. Record your own voice")
-
-# filename = st.text_input("Choose a filename: ")
-# audio_bytes = audio_recorder(pause_threshold=2.0, sample_rate=41_000)
-
-# Define a function to visualize the recorded audio
-
-
-
-
-st.subheader("Audio Recorder")
-
-
 # Use the audio recorder widget to record audio
 
 def audio_waveform(audio):
@@ -45,25 +26,51 @@ def audio_waveform(audio):
     plt.title("Audio waveform")
     st.pyplot()
 
-# Create a Streamlit app
+def dataset():
+    st.header('Dataset')
+    st.write('Below is a summary of the CREMA-D Audio Dataset ')
 
-#st.write("Click the button below to start recording")
+def mlalgorithm():
+    st.header('Dataset')
+    st.write('Below is a summary of the CREMA-D Audio Dataset ')
 
-# Call the audio_recorder() function to record audio
-audio_data = audio_recorder(energy_threshold=(-1.0, 1.0), pause_threshold=2.0,
-                            text="Record your voice",
-                            recording_color="#e8b62c",
-                            neutral_color="#6aa36f",
-                            icon_name="microphone",
-                            icon_size="6x",
-    )
+def record():
+    st.header("1. Record your own voice")
+    st.subheader("Audio Recorder")
 
-if audio_data:
-    st.audio(audio_data, format="audio/wav")
+        # Call the audio_recorder() function to record audio
+    audio_data = audio_recorder(energy_threshold=(-1.0, 1.0), pause_threshold=2.0,
+                                text="Record your voice",
+                                recording_color="#e8b62c",
+                                neutral_color="#6aa36f",
+                                icon_name="microphone",
+                                icon_size="6x",
+        )
+
+    if audio_data:
+        st.audio(audio_data, format="audio/wav")
 
 
-# Plot the audio waveform using the plot_audio_waveform function
-audio_waveform(audio_data)
+    # Plot the audio waveform using the plot_audio_waveform function
+    audio_waveform(audio_data)
+
+def home():
+    st.title('Voice Emotion Detection')
+    st.text('This web app uses ML Algorithms to detect realtime emotion of your speech')
+
+st.sidebar.title('Navigation')
+options = st.sidebar.radio('Pages', options=['Home','Dataset', 'ML Algorithims' ,'Emotion Detection'])
+
+if options == 'Home':
+    home()
+elif options == 'Dataset':
+    dataset()
+elif options == 'ML Algorithims':
+    mlalgorithm()
+elif options == 'Emotion Detection':
+    record()
+
+
 
     
 
