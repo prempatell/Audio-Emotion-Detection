@@ -1,0 +1,7 @@
+Mel-scaled spectrograms: These are similar to regular spectrograms, but the frequency axis is transformed using a mel scale, which is a perceptually-based frequency scale. Mel-scaled spectrograms are commonly used in speech recognition and music information retrieval tasks.
+
+Spectral contrast: This feature measures the spectral contrast between adjacent frequency bands in the spectrogram. It can help to highlight the presence of formants in speech signals, and can be useful for speaker recognition and speech emotion recognition.
+
+Chroma features: These are features that represent the pitch content of an audio signal, based on the 12 notes in the Western musical scale. Chroma features are commonly used in music information retrieval tasks, such as music genre classification and chord recognition.
+
+Zero-crossing rate: This feature measures the number of times the audio signal crosses the zero-axis per unit time. It can be useful for detecting percussive sounds in music signals, and for speech recognition in noisy environments.
