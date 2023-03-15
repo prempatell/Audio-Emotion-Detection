@@ -6,3 +6,4 @@ https://www.youtube.com/watch?v=SJo7vPgRlBQ
 https://www.kaggle.com/code/alifrahman/mel-spectrograms-extraction-using-librosa
 https://stackoverflow.com/questions/45548426/store-numpy-array-in-cells-of-a-pandas-dataframe
 https://stackoverflow.com/questions/38251974/how-to-pd-concat-dataframes-with-respect-to-column-values-instead-of-an-index
+https://librosa.org/doc/latest/generated/librosa.feature.spectral_contrast.html
