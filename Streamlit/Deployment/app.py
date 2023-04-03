@@ -18,9 +18,9 @@ import wave
 import webbrowser
 from audio_recorder_streamlit import audio_recorder
 import whisper
-import flair
-from flair.models import TextClassifier
-from flair.data import Sentence
+import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+nltk.download('vader_lexicon')
 
 
 logo = 'images/nerdslogo.png'
@@ -40,16 +40,10 @@ def whisper_totext(audio_file):
     return result['text']
 
 def whisperText(audiofile):
+    sid = SentimentIntensityAnalyzer()
     transcript = whisper_totext(audiofile)
-    classifier = TextClassifier.load('en-sentiment')
-    data = Sentence(transcript)
-    classifier.predict(data)
-    sentiment = data.labels[0].value
-    score = data.labels[0].score
-    print(f"Voice to Text Data: {transcript}")
-    print(f"Sentiment: {sentiment}")
-    print(f"Score: {score}")
-    return sentiment, score, transcript
+    polarity= sid.polarity_scores(transcript)
+    return transcript, polarity
 
 # Functions to get features
    
@@ -95,8 +89,8 @@ def CNN(file):
     stdfile = np.load('models/std.npy')
     audio_data = audio_data-meanfile
     audio_data = audio_data/stdfile
-    model = keras.models.load_model('models/model1_new_architecture.h5')
-    model.load_weights('models/best_weights_model_new.h5')
+    model = keras.models.load_model('models/cnn_model1_new_architecture.h5')
+    model.load_weights('models/cnn_best_weights_model_new.h5')
     Xtrain = np.expand_dims(audio_data, axis=-2)
     prediction = model.predict(Xtrain)
     #prediction2 = model2.predict(Xtrain)
@@ -203,6 +197,43 @@ def chroma_graph(file):
     plt.tight_layout()
     st.pyplot()
 
+def zero_crossing(file):
+    y, sr = librosa.load(io.BytesIO(file))
+
+    # Extract zero-crossing rate feature
+    zcr = librosa.feature.zero_crossing_rate(y)
+
+    # Visualize zero-crossing rate and waveform
+    plt.figure(figsize=(8, 6))
+    plt.subplot(2, 1, 2)
+    plt.plot(zcr[0])
+    plt.title('Zero-crossing rate')
+    plt.xlabel('Frame')
+    plt.ylabel('ZCR')
+    plt.tight_layout()
+    st.pyplot()
+
+def rms(file):
+    y, sr = librosa.load(io.BytesIO(file))
+
+    # Extract zero-crossing rate feature
+    zcr = librosa.feature.zero_crossing_rate(y)
+
+    rms = librosa.feature.rms(y=y)
+
+    # Normalize RMS value to the range [0, 1]
+    rms_norm = np.interp(rms, (rms.min(), rms.max()), (0, 1))
+
+    # Visualize waveform and RMS value
+    plt.figure(figsize=(8, 6))
+    plt.subplot(2, 1, 2)
+    plt.plot(rms_norm[0])
+    plt.title('Root Mean Square (RMS) Value')
+    plt.xlabel('Frame')
+    plt.ylabel('RMS Value')
+    plt.tight_layout()
+    st.pyplot()
+
 # Use the audio recorder widget to record audio
 
 def audio_waveform(file):
@@ -231,11 +262,13 @@ def audio_viz(file):
     with col1:
         mfcc_graph(file)
         melspec_graph(file)
+        zero_crossing(file)
     
     # Display last two graphs in second column
     with col2:
         spec_con_graph(file)
         chroma_graph(file)
+        rms(file)
 
 def emotion_gif(emotion):
     if emotion == 'Happy':
@@ -256,19 +289,24 @@ def emotion_gif(emotion):
         st.image('images/sad.gif')
 
 def dataset():
-    st.header('Dataset')
-    st.write('Below is a summary of the CREMA-D Audio Dataset ')
+    st.header('Datasets')
 
     with st.container():
-        st.subheader("Introduction")
         st.write(
-            "The CREMA-D (Crowd-Sourced Emotional Multimodal Actors Dataset) is a publicly available dataset that contains audio and video recordings of 91 professional actors performing scripted and improvised sentences with different emotional expressions." 
-            "The dataset was created by researchers at the University of Southern California (USC) and is intended to be used for research and development purposes in the field of affective computing and emotion recognition."
+            "The [TESS](https://www.kaggle.com/datasets/ejlok1/toronto-emotional-speech-set-tess) dataset, or the Toronto Emotional Speech Set, is a collection of audio recordings of 200 actors speaking scripted sentences with various emotional expressions, including anger, fear, happiness, sadness, and neutral. The recordings are of high quality and provide consistent labeling of emotions, making it an excellent dataset for training and evaluating emotion detection algorithms."
             )
-        st.subheader("Audio Recordings")
         st.write(
-            "The dataset includes over 7,000 audio recordings, each lasting approximately 5 seconds, with actors speaking from a selection of 12 sentences that convey different emotions such as anger, happiness, sadness, fear, disgust, neutral expressions, and four different emotion levels such as low, medium, high and unspecified. The audio files are recorded in high-quality WAV format with a sampling rate of 44.1 kHz and 16-bit resolution."
+            "The [RAVDESS](https://www.kaggle.com/uwrfkaggler/ravdess-emotional-speech-audio) dataset, or the Ryerson Audio-Visual Database of Emotional Speech and Song, contains audio recordings of 24 professional actors speaking sentences with different emotions, including neutral, calm, happy, sad, angry, fearful, surprise, and disgust. Additionally, the dataset includes audio recordings of singing with emotions and vocalizations expressing different emotions."
             )
+        st.write(
+            "The [SAVEE](https://www.kaggle.com/ejlok1/surrey-audiovisual-expressed-emotion-savee) dataset, or the Toronto Emotional Speech Set, is a collection of audio recordings of 200 actors speaking scripted sentences with various emotional expressions, including anger, fear, happiness, sadness, and neutral. The recordings are of high quality and provide consistent labeling of emotions, making it an excellent dataset for training and evaluating emotion detection algorithms."
+            )
+        st.write(
+            "The [Crema-D](https://www.kaggle.com/ejlok1/cremad) dataset, or the Toronto Emotional Speech Set, is a collection of audio recordings of 200 actors speaking scripted sentences with various emotional expressions, including anger, fear, happiness, sadness, and neutral. The recordings are of high quality and provide consistent labeling of emotions, making it an excellent dataset for training and evaluating emotion detection algorithms."
+            )
+        
+        st.image("images/emotion_data.png")
+        
 
 def mlalgorithm():
     st.header('Machine Learning Algorithms')
@@ -289,6 +327,11 @@ def mlalgorithm():
     col1, col2, col3 = st.columns([1,4,1])
     with col2:
         st.image("images/confusion_matrix_rnn.png")
+    
+    st.subheader('Multilayer Perceptron (MLP)')
+    st.write("Multilayer Perceptron (MLP) is a type of artificial neural network (ANN) that has been used for various applications such as classification and regression problems."
+             "One of the advantages of MLP is that it can learn complex non-linear relationships between the input features and the emotional content of the audio signal." 
+             "This is important for audio emotion detection because emotions are not always easy to categorize and can be influenced by various factors, such as intonation, pitch, and tempo")
 
 def record():
     audio_bytes = None
@@ -345,15 +388,28 @@ def record():
             text_analysis = whisperText(audio_data)
             textspeech = ("Text-to-Speech: " 
                         + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;❝'
-                        +text_analysis[2]+ '❞')
+                        +text_analysis[0]+ '❞')
         st.success('Done!')
         st.write(textspeech)
-        sentiment = text_analysis[0]
 
-        if sentiment == 'POSITIVE':
-            st.write("Text-Sentiment:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Positive 😃 ")
-        else:
-            st.write("Text-Sentiment:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Negative 😡 ")
+        sentiments = {'1':text_analysis[1]}
+        for key, value in sentiments['1'].items():
+            sentiments['1'][key]= f"{round(value*100, 1)}%"
+
+        neutral = 'Neutral: '+ str(text_analysis[1].get('neu'))
+        positive = 'Postivie: '+str(text_analysis[1].get('pos'))
+        negative = 'Negative: '+str(text_analysis[1].get('neg'))
+        compound = 'Compound: '+str(text_analysis[1].get('compound'))
+        spacing = 'Text-Sentiment:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+        
+        # st.write(spacing+neutral)
+        # st.write(spacing+positive)
+        # st.write(spacing+negative)
+        # st.write(spacing+compound)
+
+    
+        st.write(neutral,'😐  |  ', positive, '😃  |  ', negative, '😡  |  ', compound, '🤡')
+            
 
         if model_type == 0:
             st.write(model_type)
