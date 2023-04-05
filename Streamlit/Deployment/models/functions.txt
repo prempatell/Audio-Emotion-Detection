@@ -1,0 +1,46 @@
+def get_features_prediction(path):
+    data, sample_rate = librosa.load(path, duration=2.5, offset=0.6)
+
+    result = feature_methods(data,sample_rate)
+    feature = np.array(result)
+    return feature
+	
+def feature_methods(data,sample_rate):
+    # Zero Crossing
+    feature = np.array([])
+    zcr = np.mean(librosa.feature.zero_crossing_rate(y=data).T, axis=0)
+    feature=np.hstack((feature, zcr))
+
+    # Chroma
+    stft = np.abs(librosa.stft(data))
+    chroma_stft = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T, axis=0)
+    feature = np.hstack((feature, chroma_stft))
+
+    # MFCC Base
+    mfcc = np.mean(librosa.feature.mfcc(y=data, sr=sample_rate).T, axis=0)
+    feature = np.hstack((feature, mfcc))
+
+    # Root Mean Square Value
+    rms = np.mean(librosa.feature.rms(y=data).T, axis=0)
+    feature = np.hstack((feature, rms))
+
+    # Mel Spectogram
+    mel = np.mean(librosa.feature.melspectrogram(y=data, sr=sample_rate).T, axis=0)
+    feature = np.hstack((feature, mel)) 
+
+    #Spectral Contrast
+    spectral=np.mean(librosa.feature.spectral_contrast(y=data, sr=sample_rate).T, axis=0)
+    feature= np.hstack((feature,spectral))
+    
+    return feature
+	
+// Weights to load models with weights
+// Model Architecture for getting model details
+// Encoder.joblib to get the labels for the data
+//mean.npy and std.npy for data normalization
+
+We essentially need to predict new data
+What I am hoping for in terms of outputs is a probability of each class in terms of output 
+
+For example I put a file in:
+My output should look like the audio file is 75% neutal and 25% Angry. 
